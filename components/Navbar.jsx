@@ -1,6 +1,6 @@
 "use client";
 
-import React,{useCallback,useEffect} from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";
@@ -19,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -34,58 +33,41 @@ import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalance
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useWallet } from "@solana/wallet-adapter-react";
 
-import { GoogleViaTipLinkWalletName } from "@tiplink/wallet-adapter";
-
-
-
 const components = [
-  {
-    title: "Tokens",
-    href: "/",
-  },
-  {
-    title: "Pools",
-    href: "/docs/primitives/hover-card",
-  },
-  {
-    title: "Transactions",
-    href: "/docs/primitives/progress",
-  },
-  {
-    title: "NFTs",
-    href: "/docs/primitives/scroll-area",
-  },
+  { title: "Tokens", href: "/" },
+  { title: "Pools", href: "/docs/primitives/hover-card" },
+  { title: "Transactions", href: "/docs/primitives/progress" },
+  { title: "NFTs", href: "/docs/primitives/scroll-area" }
 ];
 
 const pools = [
-  {
-    title: "View position",
-    href: "/",
-  },
-  {
-    title: "Create position",
-    href: "/",
-  },
+  { title: "View position", href: "/" },
+  { title: "Create position", href: "/" }
 ];
 
-
 const Navbar = () => {
-
-
   const { wallet, connect, disconnect, connecting, connected } = useWallet();
-  const {setVisible} = useWalletModal();
-  const { select, connection } = useWallet();
+  const { setVisible } = useWalletModal();
+  const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
 
+  // Handles the custom dialog open/close state
+  const handleCustomDialogClose = () => setIsCustomDialogOpen(false);
+
+  // Function to handle the wallet connection
   const handleWalletButtonClick = useCallback(async () => {
-    if (connected) {
-      await disconnect();
-    } else if (!wallet) {
-      setVisible(true); 
-    } else {
-      await connect();
-    }
-  }, [connected, disconnect, wallet, setVisible, connect]);
+    handleCustomDialogClose(); // Close custom dialog
 
+    // Open prebuilt Solana wallet modal after custom dialog closes
+    setTimeout(() => {
+      if (connected) {
+        disconnect();
+      } else if (!wallet) {
+        setVisible(true); // Opens the Solana wallet modal
+      } else {
+        connect();
+      }
+    }, 300); // Delay for a smoother transition
+  }, [connected, disconnect, wallet, setVisible, connect]);
 
   return (
     <header className="flex flex-col md:flex-row items-center text-white p-4 justify-between">
@@ -98,11 +80,7 @@ const Navbar = () => {
               <NavigationMenuContent className="bg-white/10 backdrop-blur-lg backdrop-filter bg-opacity-10">
                 <ul className="grid w-[150px] gap-3 p-4 md:w-[150px] md:grid-cols-1 lg:w-[150px]">
                   {components.map((component) => (
-                    <ListItem
-                      key={component.title}
-                      title={component.title}
-                      href={component.href}
-                    ></ListItem>
+                    <ListItem key={component.title} title={component.title} href={component.href} />
                   ))}
                 </ul>
               </NavigationMenuContent>
@@ -113,11 +91,7 @@ const Navbar = () => {
               <NavigationMenuContent>
                 <ul className="grid w-[160px] gap-2 p-2 md:w-[150px] md:grid-cols-1 lg:w-[160px]">
                   {pools.map((pool) => (
-                    <ListItem
-                      key={pool.title}
-                      title={pool.title}
-                      href={pool.href}
-                    ></ListItem>
+                    <ListItem key={pool.title} title={pool.title} href={pool.href} />
                   ))}
                 </ul>
               </NavigationMenuContent>
@@ -133,58 +107,53 @@ const Navbar = () => {
       </nav>
 
       <div className="relative w-full max-w-md">
-        {/* MagnifyingGlassIcon */}
         <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-
-        {/* Search Input */}
         <Input
           type="text"
           placeholder="Search for tokens..."
-          className="w-full pl-10 border placeholder:text-white rounded-lg placeholder:font-extralight focus-visible:outline-transparent focus-visible:ring-0 "
+          className="w-full pl-10 border placeholder:text-white rounded-lg placeholder:font-extralight focus-visible:outline-transparent focus-visible:ring-0"
         />
       </div>
 
-      <Dialog>
-  <DialogTrigger asChild>
-    <Button variant="outline" className="mt-4 md:mt-0 md:ml-5 w-full md:w-auto md:h-12">
-      Connect
-    </Button>
-  </DialogTrigger>
-  <DialogContent className="sm:max-w-[425px] h-[300px] md:h-[400px] lg:h-[400px] w-[90vw] sm:w-[425px] bg-white/10 backdrop-blur-sm flex flex-col justify-center items-center">
-    <DialogHeader className="text-center">
-      <DialogTitle>Connect Wallet / Login with Gmail</DialogTitle>
-    </DialogHeader>
+      {/* Custom Dialog */}
+      <Dialog open={isCustomDialogOpen} onOpenChange={setIsCustomDialogOpen}>
+        <DialogTrigger asChild>
+          <Button variant="outline" className="mt-4 md:mt-0 md:ml-5 w-full md:w-auto md:h-12">
+            Connect
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px] h-[300px] md:h-[400px] lg:h-[400px] w-[90vw] sm:w-[425px] bg-white/10 backdrop-blur-sm flex flex-col justify-center items-center">
+          <DialogHeader className="text-center">
+            <DialogTitle>Connect Wallet / Login with Gmail</DialogTitle>
+          </DialogHeader>
 
-    {/* Centered Wallet Button */}
-    <div className="flex justify-center items-center mt-4">
-      <Button
-        onClick={handleWalletButtonClick}
-        variant="outline"
-        className="w-full md:w-auto md:h-12 flex items-center justify-center"
-      >
-        <AccountBalanceWalletOutlinedIcon className="text-base mr-1" />
-        {connected ? "Disconnect Wallet" : connecting ? "Connecting..." : "Connect Wallet"}
-      </Button>
-    </div>
-    <Separator className="my-4" />
-    {/* Centered Email Input */}
-    <div className="flex flex-col items-center gap-4 py-4 w-full">
-      <div className="flex justify-between w-full items-center">
-        <Label htmlFor="email" className="text-right mr-4">
-          Email
-        </Label>
-        <Input id="email" type="email" className="flex-grow w-1/3" />
-      </div>
-    </div>
+          <div className="flex justify-center items-center mt-4">
+            <Button
+              onClick={handleWalletButtonClick}
+              variant="outline"
+              className="w-full md:w-auto md:h-12 flex items-center justify-center"
+            >
+              <AccountBalanceWalletOutlinedIcon className="text-base mr-1" />
+              {connected ? "Disconnect Wallet" : connecting ? "Connecting..." : "Connect Wallet"}
+            </Button>
+          </div>
 
-    <DialogFooter className="flex justify-center">
-      <Button type="submit" variant="outline" className="h-10 w-28">Login</Button>
-    </DialogFooter>
-  </DialogContent>
-</Dialog>
+          <Separator className="my-4" />
 
+          <div className="flex flex-col items-center gap-4 py-4 w-full">
+            <div className="flex justify-between w-full items-center">
+              <Label htmlFor="email" className="text-right mr-4">
+                Email
+              </Label>
+              <Input id="email" type="email" className="flex-grow w-1/3" />
+            </div>
+          </div>
 
-      
+          <DialogFooter className="flex justify-center">
+            <Button type="submit" variant="outline" className="h-10 w-28">Login</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 };

@@ -18,9 +18,9 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      
+     
       <body className={inter.className}>
-        <AppWalletProvider>
+      <AppWalletProvider>
         <Navbar />
         <Card />
 
@@ -29,6 +29,7 @@ export default function RootLayout({ children }) {
         <Footer />
         </AppWalletProvider>
       </body>
+     
     </html>
   );
 }
